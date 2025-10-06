@@ -1,0 +1,253 @@
+/* 个人中心页面样式 */
+.profile-page {
+  background-color: #fafafa;
+  min-height: 100vh;
+  font-family: "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 返回按钮 */
+.back-button-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.back-button {
+  color: #666;
+  border: none;
+  background: none;
+  padding: 8px 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.back-button:hover {
+  color: #FFA500;
+}
+
+/* 主要内容区域 */
+.profile-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+
+/* 用户信息卡片 */
+.profile-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-bottom: 24px;
+}
+
+.profile-card .ant-card-body {
+  padding: 20px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.profile-avatar {
+  background: #FFA500;
+  margin-right: 16px;
+  font-size: 1.2rem;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.username {
+  margin: 0 0 4px 0;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.identity {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.profile-details {
+  margin-bottom: 16px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.detail-icon {
+  margin-right: 8px;
+  color: #999;
+}
+
+.pet-emoji {
+  margin-right: 8px;
+  font-size: 1rem;
+}
+
+.profile-actions {
+  margin-top: 16px;
+}
+
+.change-password-btn {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #666;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.change-password-btn:hover {
+  background: #e6f2ff;
+  border-color: #FFA500;
+  color: #FFA500;
+}
+
+/* 章节样式 */
+.section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  margin-bottom: 16px;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* 收藏和帖子卡片 */
+.collection-card,
+.post-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.collection-card:hover,
+.post-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.collection-card .ant-card-body,
+.post-card .ant-card-body {
+  padding: 16px;
+}
+
+.post-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.post-content {
+  flex: 1;
+}
+
+.post-title {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  line-height: 1.4;
+}
+
+.heart-icon {
+  color: #ff4d4f;
+  font-size: 1.2rem;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.post-status {
+  margin: 0;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+/* 页脚样式已移至LayoutPage */
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .profile-content {
+    padding: 0 12px 40px;
+  }
+  
+  .back-button-container {
+    padding: 12px;
+  }
+  
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .profile-avatar {
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+  
+  .username {
+    font-size: 1.2rem;
+  }
+  
+  .post-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .heart-icon {
+    margin-left: 0;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .username {
+    font-size: 1.1rem;
+  }
+  
+  .post-title {
+    font-size: 0.9rem;
+  }
+  
+  .detail-item {
+    font-size: 0.85rem;
+  }
+  
+  .change-password-btn {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-card,
+.collection-card,
+.post-card {
+  animation: fadeIn 0.5s ease-out;
+}
