@@ -7,7 +7,7 @@ import { AuthProvider } from "./AuthProvider";
 import Login from "./Login";
 import ProtectedRoute from "./ProtectedRoute";
 import PostCreate from "./PostCreate";
-import Register from "./register";
+import Register from "./Register";
 import SearchResult from "./SearchResult";
 const App = () => {
   return (
