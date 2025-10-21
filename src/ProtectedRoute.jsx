@@ -2,11 +2,11 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 
 export default function ProtectedRoute({ children }) {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, initialized } = useAuth();
 
-  if (!isLoggedIn) {
-    return <Navigate to="/login" replace />; // 未登录跳转到登录页
+  if (!initialized) {
+    // 这里可以放个骨架屏/Loading
+    return null;
   }
-
-  return children; // 已登录渲染子路由
+  return isLoggedIn ? children : <Navigate to="/login" replace />;
 }

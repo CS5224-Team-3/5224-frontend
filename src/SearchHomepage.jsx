@@ -1,15 +1,27 @@
+// SearchHomepage.jsx
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Space, App } from 'antd';
+import { Card, Button, Space, Spin, App } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { getCarouselPosts } from './services/api';
-import SearchResult from './SearchResult';
+import { getCarouselPosts, getPostsList } from './services/api';
 import './SearchHomepage.css';
 
 const { useApp } = App;
 
+// ======================== 工具函数 ========================
+function formatTimeAgo(dateString) {
+  if (!dateString) return 'Just now';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now - date;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+  if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  return 'Just now';
+}
 
-// 自定义轮播图组件
+// ======================== 轮播图组件 ========================
 const StoryCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fade, setFade] = useState(true);
@@ -18,102 +30,33 @@ const StoryCarousel = () => {
   const navigate = useNavigate();
   const { message } = useApp();
 
-  // 从后端获取帖子数据
   useEffect(() => {
-    const loadPosts = async () => {
+    let active = true;
+    (async () => {
       try {
         setLoading(true);
-        console.log('Loading carousel posts...');
-        const response = await getCarouselPosts(4);
-        console.log('Carousel API response:', response);
-        
-        const postsData = response.data;
-        console.log('Carousel data:', postsData);
-        
-        // 处理不同的数据格式
-        let carouselPosts = [];
-        
-        if (Array.isArray(postsData)) {
-          // 如果是数组，直接使用
-          carouselPosts = postsData;
-        } else if (postsData && typeof postsData === 'object') {
-          // 如果是单个对象，转换为数组
-          carouselPosts = [postsData];
-        }
-        
-        if (carouselPosts.length > 0) {
-          console.log('Carousel posts count:', carouselPosts.length);
-          console.log('Carousel posts:', carouselPosts);
-          setPosts(carouselPosts);
-        } else {
-          console.log('No valid posts data found, using default data');
-          // 如果API成功但没有数据，使用默认数据
-          setPosts([
-            {
-              postId: 1,
-              title: "Our Ragdoll was well cared for in Hangzhou!",
-              description: "One-week business trip. Daily videos from the host. Cat gained weight 😊",
-              pet_image: "https://tse3.mm.bing.net/th/id/OIP.Ut0KAYWNa9xs8uGExOMVRwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
-            },
-            {
-              postId: 2,
-              title: "Golden retriever found a loving home in Shenzhen!",
-              description: "Host took the dog to the park daily. Learned new tricks 🐕",
-              pet_image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgELMYZRkl1I2xvtG_Wo4x6zToSBTSCHL66Q&s"
-            },
-            {
-              postId: 3,
-              title: "Happy kitty days in Shanghai!",
-              description: "Very caring host. Cat didn't lose weight, even gained some! 🐱",
-              pet_image: "https://bpic.588ku.com/video_listen_meihao/video/10157_20230515084408_1.jpg!/fh/188/unsharp/true"
-            },
-            {
-              postId: 4,
-              title: "Border collie's fostering experience in Beijing!",
-              description: "Host has a yard. Dog was happy every day. Owners felt assured 🐶",
-              pet_image: "https://pic4.zhimg.com/v2-b11cb67f60e68240a4534abfda290519_1440w.jpg"
-            }
-          ]);
+        const res = await getCarouselPosts(4); 
+        const carouselPosts = Array.isArray(res?.data) ? res.data : [];
+        if (active) {
+          // 如果 GraphQL 没图片，也会回退到无图帖子，维持长度
+          setPosts(
+            carouselPosts.length > 0
+              ? carouselPosts
+              : []
+          );
         }
       } catch (error) {
-        console.error('Failed to load posts for carousel:', error);
-        message.error('Failed to load posts');
-        // 如果API失败，使用默认数据
-        setPosts([
-          {
-            postId: 1,
-            title: "Our Ragdoll was well cared for in Hangzhou!",
-            description: "One-week business trip. Daily videos from the host. Cat gained weight 😊",
-            pet_image: "https://tse3.mm.bing.net/th/id/OIP.Ut0KAYWNa9xs8uGExOMVRwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
-          },
-          {
-            postId: 2,
-            title: "Golden retriever found a loving home in Shenzhen!",
-            description: "Host took the dog to the park daily. Learned new tricks 🐕",
-            pet_image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgELMYZRkl1I2xvtG_Wo4x6zToSBTSCHL66Q&s"
-          },
-          {
-            postId: 3,
-            title: "Happy kitty days in Shanghai!",
-            description: "Very caring host. Cat didn't lose weight, even gained some! 🐱",
-            pet_image: "https://bpic.588ku.com/video_listen_meihao/video/10157_20230515084408_1.jpg!/fh/188/unsharp/true"
-          },
-          {
-            postId: 4,
-            title: "Border collie's fostering experience in Beijing!",
-            description: "Host has a yard. Dog was happy every day. Owners felt assured 🐶",
-            pet_image: "https://pic4.zhimg.com/v2-b11cb67f60e68240a4534abfda290519_1440w.jpg"
-          }
-        ]);
+        console.error('Failed to load carousel posts:', error);
+        message.error('Failed to load stories.');
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
-    };
-
-    loadPosts();
+    })();
+    return () => { active = false; };
   }, [message]);
 
   const handlePrev = () => {
+    if (!posts.length) return;
     setFade(false);
     setTimeout(() => {
       setCurrentIndex((prev) => (prev === 0 ? posts.length - 1 : prev - 1));
@@ -122,6 +65,7 @@ const StoryCarousel = () => {
   };
 
   const handleNext = () => {
+    if (!posts.length) return;
     setFade(false);
     setTimeout(() => {
       setCurrentIndex((prev) => (prev === posts.length - 1 ? 0 : prev + 1));
@@ -129,15 +73,12 @@ const StoryCarousel = () => {
     }, 50);
   };
 
-  // 自动播放
   useEffect(() => {
     if (posts.length > 0) {
-      const timer = setInterval(() => {
-        handleNext();
-      }, 3000);
+      const timer = setInterval(() => handleNext(), 4000);
       return () => clearInterval(timer);
     }
-  }, [currentIndex, posts.length, handleNext]);
+  }, [posts.length]);
 
   const handleDotClick = (index) => {
     setFade(false);
@@ -147,51 +88,37 @@ const StoryCarousel = () => {
     }, 50);
   };
 
-  // 处理标题点击事件
-  const handleTitleClick = (postId) => {
-    navigate(`/detail/${postId}`);
-  };
+  const handleTitleClick = (postId) => navigate(`/detail/${postId}`);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (!posts.length) return null;
 
-  if (posts.length === 0) {
-    return <div>No posts available</div>;
-  }
+  const current = posts[currentIndex];
 
   return (
     <div className="carousel-container">
-      {/* 左箭头 */}
-      <Button 
-        className="carousel-arrow carousel-arrow-left"
-        icon={<LeftOutlined />}
-        onClick={handlePrev}
-        shape="circle"
-        size="large"
-      />
-      
-      {/* 轮播内容 */}
+      <Button className="carousel-arrow carousel-arrow-left" icon={<LeftOutlined />} onClick={handlePrev} shape="circle" size="large" />
       <div className="carousel-wrapper">
         <div className={`carousel-slide ${fade ? 'fade-in' : 'fade-out'}`}>
           <Card className="story-card">
-            <img 
-              src={posts[currentIndex].pet_image || posts[currentIndex].image} 
-              alt={posts[currentIndex].title} 
-              className="story-image" 
-            />
-            <h3 
+            {current?.pet_image ? (
+              <img
+                src={current.pet_image}
+                alt={current.title}
+                className="story-image"
+              />
+            ) : null}
+            <h3
               className="story-title clickable"
-              onClick={() => handleTitleClick(posts[currentIndex].postId)}
+              onClick={() => handleTitleClick(current.postId)}
               style={{ cursor: 'pointer' }}
             >
-              {posts[currentIndex].title}
+              {current.title}
             </h3>
-            <p>{posts[currentIndex].description}</p>
+            {current?.description ? <p>{current.description}</p> : null}
           </Card>
         </div>
-        
-        {/* 圆点指示器 */}
+
         <div className="carousel-dots">
           {posts.map((_, index) => (
             <span
@@ -202,29 +129,64 @@ const StoryCarousel = () => {
           ))}
         </div>
       </div>
-
-      {/* 右箭头 */}
-      <Button 
-        className="carousel-arrow carousel-arrow-right"
-        icon={<RightOutlined />}
-        onClick={handleNext}
-        shape="circle"
-        size="large"
-      />
+      <Button className="carousel-arrow carousel-arrow-right" icon={<RightOutlined />} onClick={handleNext} shape="circle" size="large" />
     </div>
   );
 };
 
+// ======================== 主页面组件 ========================
+const SearchHomepage = () => {
+  const navigate = useNavigate();
+  const [allPosts, setAllPosts] = useState([]);
+  const [nextToken, setNextToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await getPostsList({ limit: 50 });
+        const items = res?.data ?? [];
+        const token = res?.nextToken ?? null;
+        const formatted = items.map((p) => ({
+          id: p.id ?? p.postId ?? p._id,
+          author: p.owner ?? p.userid ?? 'Anonymous',
+          title: p.title ?? 'Untitled',
+          description: p.description ?? p.content ?? '',
+          tags: Array.isArray(p.keywords) ? p.keywords : [],
+          location: p.city ?? '',
+          petType: p.pet_type ?? '',
+          timeAgo: formatTimeAgo(p.createAt ?? p.createdAt ?? p.updatedAt),
+        }));
 
-// 主搜索页面组件
-const SearchHomepage = ({ onCreatePost }) => {
+        if (mounted) {
+          setAllPosts(formatted);
+          setNextToken(token);
+        }
+      } catch (err) {
+        console.error('❌ Failed to load posts:', err);
+        if (mounted) {
+          setAllPosts([]);
+          setNextToken(null);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  if (loading)
+    return (
+      <div style={{ textAlign: 'center', padding: 80 }}>
+        <Spin size="large" tip="Loading posts..." />
+      </div>
+    );
 
   return (
     <div className="search-homepage">
-      {/* 主要内容区域 */}
-      <div className="main-content" style={{backgroundColor: '#ffffff'}}>
-        {/* 成功故事轮播 */}
+      <div className="main-content" style={{ backgroundColor: '#ffffff' }}>
         <div className="hero-section">
           <Card className="hero-card">
             <h2>Successful Fostering Stories</h2>
@@ -233,13 +195,39 @@ const SearchHomepage = ({ onCreatePost }) => {
           <StoryCarousel />
         </div>
 
-        
+        {/* 所有帖子展示 */}
+        <div style={{ marginTop: 40, padding: '0 16px' }}>
+          <h3 style={{ marginBottom: 16 }}>Latest Posts</h3>
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            {allPosts.map((post) => (
+              <Card
+                key={post.id}
+                hoverable
+                title={post.title}
+                onClick={() => navigate(`/detail/${post.id}`)}
+              >
+                {post.description ? <p>{post.description}</p> : null}
+                <p style={{ color: '#999', fontSize: 13 }}>
+                  {post.author} · {post.location} · {post.timeAgo}
+                </p>
+              </Card>
+            ))}
+          </Space>
 
-        {/* 使用 SearchResult 组件显示帖子列表 - 默认按时间排序 */}
-        <SearchResult isSearchResult={false} />
+          {!allPosts.length && (
+            <div style={{ textAlign: 'center', padding: 60, color: '#999' }}>
+              <p>No posts found</p>
+            </div>
+          )}
+
+          {/* 如果要做分页加载：
+          {nextToken && (
+            <div style={{ textAlign: 'center', marginTop: 16 }}>
+              <Button onClick={handleLoadMore}>Load more</Button>
+            </div>
+          )} */}
+        </div>
       </div>
-
-
     </div>
   );
 };

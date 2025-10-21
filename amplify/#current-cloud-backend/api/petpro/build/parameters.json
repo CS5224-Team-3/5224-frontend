@@ -1,0 +1,13 @@
+{
+    "AppSyncApiName": "petpro",
+    "DynamoDBBillingMode": "PAY_PER_REQUEST",
+    "DynamoDBEnableServerSideEncryption": false,
+    "AuthCognitoUserPoolId": {
+        "Fn::GetAtt": [
+            "authpetpro5d747c07",
+            "Outputs.UserPoolId"
+        ]
+    },
+    "S3DeploymentBucket": "amplify-petpro-dev-95745-deployment",
+    "S3DeploymentRootKey": "amplify-appsync-files/e3e0f89ff8f9b5e74af3f94fd3a18f755e937a30"
+}

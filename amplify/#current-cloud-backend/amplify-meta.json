@@ -1,0 +1,131 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-petpro-dev-95745-authRole",
+      "UnauthRoleArn": "arn:aws:iam::797886333850:role/amplify-petpro-dev-95745-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::797886333850:role/amplify-petpro-dev-95745-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "amplify-petpro-dev-95745-deployment",
+      "UnauthRoleName": "amplify-petpro-dev-95745-unauthRole",
+      "StackName": "amplify-petpro-dev-95745",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:797886333850:stack/amplify-petpro-dev-95745/9ea273f0-a9a5-11f0-96e2-06bdee57bd69",
+      "AmplifyAppId": "d2vn2oza01enik"
+    }
+  },
+  "auth": {
+    "petpro5d747c07": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false,
+      "frontendAuthConfig": {
+        "socialProviders": [],
+        "usernameAttributes": [
+          "EMAIL"
+        ],
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 8,
+          "passwordPolicyCharacters": []
+        },
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-petpro-dev-95745-deployment/amplify-cfn-templates/auth/petpro5d747c07-cloudformation-template.json",
+        "logicalId": "authpetpro5d747c07"
+      },
+      "lastPushTimeStamp": "2025-10-20T13:42:34.937Z",
+      "output": {
+        "UserPoolId": "ap-southeast-1_zvGHwRyKB",
+        "AppClientIDWeb": "7qe9squjmjs4357ajkepjq92v",
+        "AppClientID": "753dcl3lq0nchhsmgn66sunhhm",
+        "IdentityPoolId": "ap-southeast-1:4cda6f3a-e6cb-4057-87cb-ca65e6651504",
+        "UserPoolArn": "arn:aws:cognito-idp:ap-southeast-1:797886333850:userpool/ap-southeast-1_zvGHwRyKB",
+        "IdentityPoolName": "petpro5d747c07_identitypool_5d747c07__dev",
+        "UserPoolName": "petpro5d747c07_userpool_5d747c07"
+      },
+      "lastPushDirHash": "6ZO23XRJS064nmoWXhTdlWdbbWo="
+    }
+  },
+  "api": {
+    "petpro": {
+      "service": "AppSync",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "petpro5d747c07"
+        }
+      ],
+      "output": {
+        "authConfig": {
+          "defaultAuthentication": {
+            "authenticationType": "API_KEY",
+            "apiKeyConfig": {
+              "apiKeyExpirationDays": 300,
+              "apiKeyExpirationDate": "2026-08-16T13:35:48.068Z",
+              "description": "public-read-key"
+            }
+          },
+          "additionalAuthenticationProviders": [
+            {
+              "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+              "userPoolConfig": {
+                "userPoolId": "authpetpro5d747c07"
+              }
+            }
+          ]
+        },
+        "GraphQLAPIIdOutput": "uvfqk6jcojhktfyvd2r5w36vgm",
+        "GraphQLAPIEndpointOutput": "https://zwa7c42afjfdnomszpmlmewcia.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+        "GraphQLAPIKeyOutput": "da2-3c36ctgry5glje6ckmprddtszi"
+      },
+      "lastPushTimeStamp": "2025-10-20T13:42:36.052Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-petpro-dev-95745-deployment/amplify-cfn-templates/api/cloudformation-template.json",
+        "logicalId": "apipetpro"
+      },
+      "lastPushDirHash": "0L8qcsloyznygVhtekCkcTHyhwQ="
+    }
+  },
+  "function": {
+    "preSignupAutoConfirm1": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [],
+      "lastBuildTimeStamp": "2025-10-20T13:39:34.868Z",
+      "lastBuildType": "PROD",
+      "lastPackageTimeStamp": "2025-10-20T13:39:34.901Z",
+      "distZipFilename": "preSignupAutoConfirm1-63572f7a666e43734c48-build.zip",
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-petpro-dev-95745-deployment",
+        "s3Key": "amplify-builds/preSignupAutoConfirm1-63572f7a666e43734c48-build.zip"
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-petpro-dev-95745-deployment/amplify-cfn-templates/function/preSignupAutoConfirm1-cloudformation-template.json",
+        "logicalId": "functionpreSignupAutoConfirm1"
+      },
+      "lastPushTimeStamp": "2025-10-20T13:42:36.052Z",
+      "output": {
+        "LambdaExecutionRoleArn": "arn:aws:iam::797886333850:role/petproLambdaRole5d7ded0b-dev",
+        "Region": "ap-southeast-1",
+        "Arn": "arn:aws:lambda:ap-southeast-1:797886333850:function:preSignupAutoConfirm1-dev",
+        "Name": "preSignupAutoConfirm1-dev",
+        "LambdaExecutionRole": "petproLambdaRole5d7ded0b-dev"
+      },
+      "lastPushDirHash": "KhWiRtgYKa5mUt6N9VxYWubG6rI="
+    }
+  }
+}

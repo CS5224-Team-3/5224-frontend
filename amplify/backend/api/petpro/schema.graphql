@@ -1,0 +1,30 @@
+type Post
+  @model
+  @auth(rules: [
+    { allow: public, operations: [read] },
+    { allow: owner, operations: [create, update, delete, read] }
+  ]) {
+  id: ID!
+  title: String!
+  content: String!
+  owner: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  comments: [Comment] @hasMany(indexName: "byPost", fields: ["id"])
+}
+
+type Comment
+  @model
+  @auth(rules: [
+    { allow: public, operations: [read] },
+    { allow: owner, operations: [create, update, delete, read] }
+  ]) {
+  id: ID!
+  postId: ID! @index(name: "byPost", sortKeyFields: ["createdAt"])
+  content: String!
+  owner: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  post: Post @belongsTo(fields: ["postId"])
+}
+ 
