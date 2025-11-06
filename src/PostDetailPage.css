@@ -1,0 +1,288 @@
+/* 帖子详情页样式 */
+.post-detail-page {
+  background-color: #fafafa;
+  min-height: 100vh;
+  font-family: "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 返回按钮 */
+.back-button-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.back-button {
+  color: #666;
+  border: none;
+  background: none;
+  padding: 8px 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.back-button:hover {
+  color: #FFA500;
+}
+
+/* 主要内容区域 */
+.detail-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+
+/* 帖子详情卡片 */
+.post-detail-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-bottom: 24px;
+}
+
+.post-detail-card .ant-card-body {
+  padding: 20px;
+}
+
+/* 帖子头部信息 */
+.post-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.post-meta {
+  margin-left: 10px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* 帖子标题 */
+.post-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin: 16px 0;
+  color: #333;
+  line-height: 1.4;
+}
+
+/* 帖子描述 */
+.post-description {
+  color: #666;
+  margin: 16px 0;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* 宠物图片容器 */
+.post-image-container {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.post-image {
+  width: 100%;
+  max-width: 600px;
+  height: 300px;
+  object-fit: contain;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* 标签 */
+.post-tags {
+  margin: 16px 0;
+}
+
+.post-tag {
+  margin-right: 8px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+/* 帖子操作 */
+.post-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.like-btn {
+  color: #ccc;
+  border: none;
+  background: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.like-btn:hover {
+  color: #ff4d4f;
+  background: #fff2f0;
+}
+
+.like-btn.liked {
+  color: #ff4d4f;
+  background: #fff2f0;
+}
+
+/* 评论卡片 */
+.comments-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.comments-card .ant-card-body {
+  padding: 20px;
+}
+
+.comments-title {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* 评论项 */
+.comment-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-header {
+  margin-bottom: 8px;
+}
+
+.comment-author {
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.comment-time {
+  color: #999;
+  font-size: 0.85rem;
+  margin-left: 4px;
+}
+
+.comment-content {
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+/* 回复区域 */
+.reply-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.reply-input {
+  margin-bottom: 12px;
+  border-radius: 6px;
+}
+
+.reply-btn {
+  background: #FFA500;
+  border-color: #FFA500;
+  border-radius: 6px;
+  padding: 8px 16px;
+  height: auto;
+  transition: all 0.2s ease;
+}
+
+.reply-btn:hover {
+  background: #ff8c00;
+  border-color: #ff8c00;
+  transform: translateY(-1px);
+}
+
+/* 页脚样式已移至LayoutPage */
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .detail-content {
+    padding: 0 12px 40px;
+  }
+  
+  .back-button-container {
+    padding: 12px;
+  }
+  
+  .post-detail-card .ant-card-body,
+  .comments-card .ant-card-body {
+    padding: 16px;
+  }
+  
+  .post-title {
+    font-size: 1.2rem;
+  }
+  
+  .post-image {
+    height: 250px;
+  }
+  
+  .post-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .post-title {
+    font-size: 1.1rem;
+  }
+  
+  .post-description {
+    font-size: 0.9rem;
+  }
+  
+  .post-image {
+    height: 200px;
+  }
+  
+  .comment-content {
+    font-size: 0.85rem;
+  }
+  
+  .reply-btn {
+    width: 100%;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.post-detail-card,
+.comments-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.comment-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Ant Design 组件自定义样式 */
+.reply-input .ant-input {
+  border-radius: 6px;
+}
+
+.reply-input .ant-input:focus {
+  border-color: #FFA500;
+  box-shadow: 0 0 0 2px rgba(255, 165, 0, 0.2);
+}

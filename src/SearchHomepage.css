@@ -1,0 +1,379 @@
+/* 根变量定义 */
+:root {
+  --primary: #E6F2FF;
+  --accent: #FFA500;
+  --text: #333;
+  --light-gray: #f5f5f5;
+  --border: #ddd;
+  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+  --card-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* 主容器样式 */
+.search-homepage {
+  background-color: #fafafa;
+  min-height: 100vh;
+  font-family: "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 头部样式已移至 SearchHeader.css */
+
+/* 主要内容区域 */
+.main-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* 英雄区域 */
+.hero-section {
+  margin-bottom: 24px;
+}
+
+.hero-card {
+  background: var(--primary);
+  border: none;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.hero-card .ant-card-body {
+  padding: 20px;
+}
+
+.hero-card h2 {
+  margin-bottom: 12px;
+  color: var(--accent);
+  font-size: 1.5rem;
+}
+
+.hero-card p {
+  color: var(--text);
+  margin: 0;
+}
+
+/* 自定义轮播图样式 */
+.carousel-container {
+  position: relative;
+  border-radius: 12px;
+  overflow: visible;
+  box-shadow: var(--card-shadow);
+  background: white;
+}
+
+.carousel-wrapper {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.carousel-slide {
+  transition: opacity 0.5s ease-in-out;
+}
+
+.carousel-slide.fade-in {
+  opacity: 1;
+}
+
+.carousel-slide.fade-out {
+  opacity: 0;
+}
+
+.story-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: none;
+  background: white;
+}
+
+.story-card .ant-card-body {
+  padding: 16px;
+}
+
+.story-image {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  background-color: var(--light-gray);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.story-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.story-card p {
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* 轮播图箭头样式 */
+.carousel-arrow {
+  position: absolute;
+  top: 110px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.carousel-arrow:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
+
+.carousel-arrow-left {
+  left: 50px;
+
+}
+
+.carousel-arrow-right {
+  right: 50px;
+
+}
+
+/* 圆点指示器样式 */
+.carousel-dots {
+  position: absolute;
+  bottom: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d9d9d9;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.carousel-dot:hover {
+  background: #bfbfbf;
+  transform: scale(1.2);
+}
+
+.carousel-dot.active {
+  background: #FFA500;
+  transform: scale(1.2);
+}
+
+/* 筛选器样式 */
+.filters-card {
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: var(--card-shadow);
+}
+
+.filters-card .ant-card-body {
+  padding: 16px;
+}
+
+/* 帖子区域 */
+.posts-section h3 {
+  margin-bottom: 16px;
+  color: var(--text);
+  font-size: 1.2rem;
+}
+
+.post-card {
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.post-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.post-card .ant-card-body {
+  padding: 16px;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.post-meta {
+  margin-left: 10px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.post-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin: 8px 0;
+  color: var(--text);
+}
+
+.post-description {
+  color: #666;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.post-tags {
+  margin: 8px 0;
+}
+
+.post-tag {
+  margin-right: 6px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+.post-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.favorite-btn {
+  color: #ccc;
+  font-size: 1.2rem;
+  border: none;
+  background: none;
+  padding: 0;
+  height: auto;
+}
+
+.favorite-btn:hover {
+  color: #ff4d4f;
+}
+
+.favorite-btn.liked {
+  color: #ff4d4f;
+}
+
+/* 浮动按钮 */
+.fab-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(255,165,0,0.4);
+  z-index: 1000;
+}
+
+.fab-button:hover {
+  background: #ff8c00;
+  border-color: #ff8c00;
+  transform: scale(1.1);
+}
+
+.fab-button .anticon {
+  font-size: 1.8rem;
+}
+
+/* 页脚 */
+.footer {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-size: 0.9rem;
+  margin-top: 40px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 12px;
+  }
+  
+  .hero-card h2 {
+    font-size: 1.3rem;
+  }
+  
+  .story-image {
+    height: 180px;
+  }
+  
+  .fab-button {
+    bottom: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+  }
+  
+  .fab-button .anticon {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-card h2 {
+    font-size: 1.2rem;
+  }
+  
+  .story-image {
+    height: 150px;
+  }
+  
+  .post-title {
+    font-size: 1rem;
+  }
+  
+  .post-meta {
+    font-size: 0.8rem;
+  }
+}
+
+/* Ant Design 组件自定义样式 */
+
+.ant-select-selector {
+  border-radius: 6px !important;
+}
+
+.ant-picker {
+  border-radius: 6px !important;
+}
+
+.ant-card {
+  border-radius: 12px !important;
+}
+
+.ant-tag {
+  border-radius: 12px !important;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.post-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.story-card {
+  animation: fadeIn 0.5s ease-out;
+}

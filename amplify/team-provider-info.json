@@ -1,0 +1,59 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-petpro-dev-95745-authRole",
+      "UnauthRoleArn": "arn:aws:iam::797886333850:role/amplify-petpro-dev-95745-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::797886333850:role/amplify-petpro-dev-95745-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "amplify-petpro-dev-95745-deployment",
+      "UnauthRoleName": "amplify-petpro-dev-95745-unauthRole",
+      "StackName": "amplify-petpro-dev-95745",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:797886333850:stack/amplify-petpro-dev-95745/9ea273f0-a9a5-11f0-96e2-06bdee57bd69",
+      "AmplifyAppId": "d2vn2oza01enik"
+    },
+    "categories": {
+      "auth": {
+        "petpro5d747c07": {}
+      },
+      "api": {
+        "petpro": {}
+      },
+      "function": {
+        "preSignupAutoConfirm1": {
+          "deploymentBucketName": "amplify-petpro-dev-95745-deployment",
+          "s3Key": "amplify-builds/preSignupAutoConfirm1-63572f7a666e43734c48-build.zip"
+        }
+      }
+    }
+  },
+  "newpro": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-petpro-newpro-a7ddd-authRole",
+      "UnauthRoleArn": "arn:aws:iam::797886333850:role/amplify-petpro-newpro-a7ddd-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::797886333850:role/amplify-petpro-newpro-a7ddd-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "amplify-petpro-newpro-a7ddd-deployment",
+      "UnauthRoleName": "amplify-petpro-newpro-a7ddd-unauthRole",
+      "StackName": "amplify-petpro-newpro-a7ddd",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:797886333850:stack/amplify-petpro-newpro-a7ddd/cb4c9f70-ba03-11f0-a682-0202a7ce2805",
+      "AmplifyAppId": "d2vn2oza01enik"
+    },
+    "categories": {
+      "auth": {
+        "petpro5d747c07": {}
+      },
+      "function": {
+        "preSignupAutoConfirm1": {
+          "deploymentBucketName": "amplify-petpro-newpro-a7ddd-deployment",
+          "s3Key": "amplify-builds/preSignupAutoConfirm1-63572f7a666e43734c48-build.zip"
+        }
+      },
+      "api": {
+        "petpro": {}
+      },
+      "storage": {
+        "mypet": {}
+      }
+    }
+  }
+}

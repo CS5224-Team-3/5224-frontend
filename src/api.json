@@ -1,0 +1,310 @@
+{
+    "info": {
+      "_postman_id": "d6e1f2a0-1234-4567-8901-abcdef123456",
+      "name": "Pet Forum API",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Register",
+        "request": {
+          "method": "POST",
+          "header": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"username\": \"string\",\n  \"password\": \"string\"\n}"
+          },
+          "url": {
+            "raw": "{{baseUrl}}/api/register",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","register"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\": \"register success\",\n  \"userId\": \"uuid\",\n  \"username\": \"string\"\n}"
+          }
+        ]
+      },
+      {
+        "name": "Login",
+        "request": {
+          "method": "POST",
+          "header": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"username\": \"string\",\n  \"password\": \"string\"\n}"
+          },
+          "url": {
+            "raw": "{{baseUrl}}/api/login",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","login"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\": \"login success\",\n  \"data\": {\n    \"token\": \"jwt\",\n    \"userid\": \"uuid\",\n    \"username\": \"string\"\n  }\n}"
+          }
+        ]
+      },
+      {
+        "name": "Get User Profile",
+        "request": {
+          "method": "GET",
+          "header": [
+            { "key": "Authorization", "value": "Bearer {{token}}" }
+          ],
+          "url": {
+            "raw": "{{baseUrl}}/api/user/profile",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","user","profile"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\": \"success\",\n  \"data\": {\n    \"userid\": \"uuid\",\n    \"email\": \"string\",\n    \"userCreateAt\": \"2025-09-26T09:00:00Z\",\n    \"description\": []\n  }\n}"
+          }
+        ]
+      },
+      {
+        "name": "Create Post",
+        "request": {
+          "method": "POST",
+          "header": [
+            { "key": "Authorization", "value": "Bearer {{token}}" },
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"pet_type\": \"string\",\n  \"city\": \"string\",\n  \"startDate\": \"2025-10-01\",\n  \"endDate\": \"2025-10-05\",\n  \"createAt\": \"2025-09-26T09:00:00Z\",\n  \"keywords\": [\"string\"],\n  \"title\": \"string\",\n  \"description\": \"string\"\n}"
+          },
+          "url": {
+            "raw": "{{baseUrl}}/api/posts",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","posts"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\": \"post created\",\n  \"data\": {\n    \"postid\": \"uuid\"\n  }\n}"
+          }
+        ]
+      },
+      {
+        "name": "Get Post Detail",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{baseUrl}}/api/posts/{{postId}}",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","posts","{{postId}}"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\": \"ok\",\n  \"data\": {\n    \"postId\": \"uuid\",\n    \"userId\": \"uuid\",\n    \"petType\": \"dog\",\n    \"city\": \"Shanghai\",\n    \"startDate\": \"2025-10-01\",\n    \"endDate\": \"2025-10-05\",\n    \"title\": \"string\",\n    \"keywords\": [\"friendly\",\"small\"],\n    \"description\": \"Looking for a pet sitter near Pudong...\",\n    \"postCreatedAt\": \"2025-09-26T09:00:00Z\"\n  }\n}"
+          }
+        ]
+      },
+      {
+        "name": "Delete Post",
+        "request": {
+          "method": "DELETE",
+          "header": [
+            { "key": "Authorization", "value": "Bearer {{token}}" }
+          ],
+          "url": {
+            "raw": "{{baseUrl}}/api/posts/{{postId}}",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","posts","{{postId}}"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\": \"post deleted\",\n  \"postid\": \"uuid\"\n}"
+          }
+        ]
+      },
+      {
+        "name": "Get Posts List",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{baseUrl}}/api/posts",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","posts"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\": \"ok\",\n  \"data\": {\n    \"total\": 53,\n    \"list\": [\n      {\"postId\":101,\"title\":\"string\",\"userid\":\"uuid\",\"postCreateAt\":\"2025-09-26T09:00:00Z\"}\n    ]\n  }\n}"
+          }
+        ]
+      },
+      {
+        "name": "Search Posts",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{baseUrl}}/api/posts/search?q=dog+sitter&city=Shanghai&petType=dog",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","posts","search"],
+            "query": [
+              { "key": "q", "value": "dog sitter" },
+              { "key": "city", "value": "Shanghai" },
+              { "key": "petType", "value": "dog" }
+            ]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\": \"ok\",\n  \"data\": {\n    \"total\": 53,\n    \"list\": [\n      {\"postId\":101,\"title\":\"string\",\"userid\":\"uuid\",\"postCreateAt\":\"2025-09-26T09:00:00Z\",\"score\": 95}\n    ]\n  }\n}"
+          }
+        ]
+      },
+      {
+        "name": "Get User Posts",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{baseUrl}}/api/user/posts",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","user","posts"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\": \"ok\",\n  \"data\": [\n    {\"total\": 5,\"postId\":101,\"title\":\"string\",\"userid\":\"uuid\",\"postCreateAt\":\"2025-09-26T09:00:00Z\"}\n  ]\n}"
+          }
+        ]
+      },
+      {
+        "name": "Update User Profile",
+        "request": {
+          "method": "PUT",
+          "header": [
+            { "key": "Authorization", "value": "Bearer {{token}}" },
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"modified\": [\n    {\"name\":\"newName\"},\n    {\"contact\":\"123456789\"}\n  ]\n}"
+          },
+          "url": {
+            "raw": "{{baseUrl}}/api/user/profile",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","user","profile"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\":\"ok\",\n  \"userid\":\"uuid\"\n}"
+          }
+        ]
+      },
+      {
+        "name": "Update Post",
+        "request": {
+          "method": "PUT",
+          "header": [
+            { "key": "Authorization", "value": "Bearer {{token}}" },
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"modified\": [\n    {\"title\":\"new title\"},\n    {\"description\":\"updated description\"}\n  ]\n}"
+          },
+          "url": {
+            "raw": "{{baseUrl}}/api/posts/{{postid}}",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","posts","{{postid}}"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\":\"ok\",\n  \"postid\":\"uuid\"\n}"
+          }
+        ]
+      },
+      {
+        "name": "Favorite Post",
+        "request": {
+          "method": "POST",
+          "header": [
+            { "key": "Authorization", "value": "Bearer {{token}}" }
+          ],
+          "url": {
+            "raw": "{{baseUrl}}/api/posts/{{postId}}/favorite",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","posts","{{postId}}","favorite"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\":\"post favorited\"\n}"
+          }
+        ]
+      },
+      {
+        "name": "Unfavorite Post",
+        "request": {
+          "method": "DELETE",
+          "header": [
+            { "key": "Authorization", "value": "Bearer {{token}}" }
+          ],
+          "url": {
+            "raw": "{{baseUrl}}/api/posts/{{postId}}/favorite",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","posts","{{postId}}","favorite"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"message\":\"post unfavorited\"\n}"
+          }
+        ]
+      },
+      {
+        "name": "Get User Favorites",
+        "request": {
+          "method": "GET",
+          "header": [
+            { "key": "Authorization", "value": "Bearer {{token}}" }
+          ],
+          "url": {
+            "raw": "{{baseUrl}}/api/user/favorites",
+            "host": ["{{baseUrl}}"],
+            "path": ["api","user","favorites"]
+          }
+        },
+        "response": [
+          {
+            "name": "Success",
+            "body": "{\n  \"data\": [\n    {\"postId\":\"101\",\"title\":\"string\",\"userid\":\"uuid\",\"createdAt\":\"2025-09-26T09:00:00Z\"}\n  ]\n}"
+          }
+        ]
+      }
+    ]
+  }
+  

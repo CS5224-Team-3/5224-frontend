@@ -1,0 +1,49 @@
+# schema.graphql
+
+type Post
+  @model
+  @auth(rules: [
+    { allow: public, operations: [read] },
+    { allow: owner, operations: [create, update, delete, read] }
+  ]) {
+  id: ID!
+  title: String!
+  content: String!
+
+  # —— 业务字段（与前端一致）——
+  description: String
+  pet_type: String
+  city: String
+  startDate: AWSDate
+  endDate: AWSDate
+  keywords: [String]
+
+  # —— 图片字段 —— 
+  pet_image: AWSURL
+  pet_image_key: String
+
+  owner: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+
+  # 通过 Comment.postId 反查评论
+  comments: [Comment] @hasMany(indexName: "byPost", fields: ["id"])
+}
+
+type Comment
+  @model
+  @auth(rules: [
+    { allow: public, operations: [read] },
+    { allow: owner, operations: [create, update, delete, read] }
+  ]) {
+  id: ID!
+  # 二级索引：按 postId + createdAt 排序
+  postId: ID! @index(name: "byPost", sortKeyFields: ["createdAt"])
+  content: String!
+  owner: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+
+  # ⚠️ 这里一定不要加 "!"，保持可空，避免 createComment 时 resolver 立刻去解析嵌套 post 失败
+  post: Post @belongsTo(fields: ["postId"])
+}
