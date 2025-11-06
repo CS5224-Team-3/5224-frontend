@@ -13,8 +13,8 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 ##启动项目
-配置环境变量VITE_API_BASE_URL  为后端暴露的公网接口
-
-npm install
-
 npm run dev
+如果不行就：
+amplify init
+amplify push
+amplify codegen
