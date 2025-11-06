@@ -1,159 +1,184 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Avatar, Button, Input, Space, Tag, App, Spin } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Card, Avatar, Button, Input, Space, Tag, Spin, message } from 'antd';
 import { UserOutlined, HeartOutlined, HeartFilled, SendOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getPostDetail, favoritePost, unfavoritePost, addReply } from './services/api';
+import { getUrl } from 'aws-amplify/storage';
+
+import { client } from './services/amplifyClient';
+
+import {
+  getPost as gqlGetPost,
+  listComments as gqlListComments,
+} from './graphql/queries';
+import { createComment as gqlCreateComment } from './graphql/mutations';
+
 import './PostDetailPage.css';
 
 const { TextArea } = Input;
-const { useApp } = App;
+const FALLBACK_IMAGE = 'https://imgs.699pic.com/images/501/343/865.jpg!list1x.v2';
 
-const PostDetailPage = () => {
+function formatTimeAgo(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now - date;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+  if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  return 'Just now';
+}
+
+export default function PostDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { message } = useApp();
+
   const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [postData, setPostData] = useState(null);
   const [comments, setComments] = useState([]);
 
-  // 加载帖子详情
-  useEffect(() => {
-    const loadPostDetail = async () => {
-      setLoading(true);
-      try {
-        const response = await getPostDetail(id);
-        const data = response.data;
-        console.log('Post detail data:', data);
-        console.log('Replies data:', data.replies);
-        
-        // 将后端数据转换为前端格式
-        setPostData({
-          id: data.postId,
-          author: data.userId, // TODO: 可能需要另一个接口获取用户名
-          timeAgo: formatTimeAgo(data.postCreatedAt),
-          petType: `🐱 ${data.petType}`,
-          location: data.city,
-          title: data.title,
-          description: data.description,
-          image: data.pet_image || "https://imgs.699pic.com/images/501/343/865.jpg!list1x.v2", // 使用后端返回的图片URL
-          tags: data.keywords || []
-        });
-        
-        // 处理回复数据
-        if (data.replies && Array.isArray(data.replies)) {
-          const formattedComments = data.replies.map((reply, index) => ({
-            id: index, // 使用索引作为临时ID
-            author: reply.reply_username,
-            timeAgo: formatReplyTime(reply.reply_time),
-            content: reply.reply_content
-          }));
-          console.log('Formatted comments:', formattedComments);
-          setComments(formattedComments);
-        } else {
-          console.log('No replies found or replies is not an array');
-          setComments([]);
-        }
-      } catch (error) {
-        console.error('Failed to load post:', error);
-        message.error('Failed to load post details');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadPostDetail();
-  }, [id, message]);
-
-  // 格式化时间
-  const formatTimeAgo = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now - date;
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(hours / 24);
-    
-    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
-    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    return 'Just now';
-  };
-
-  // 格式化回复时间
-  const formatReplyTime = (timeString) => {
-    // 如果时间格式是 HH:mm:ss，直接返回
-    if (timeString && timeString.match(/^\d{2}:\d{2}:\d{2}$/)) {
-      return timeString;
-    }
-    
-    // 如果是完整的日期时间，使用 formatTimeAgo
-    if (timeString) {
-      return formatTimeAgo(timeString);
-    }
-    
-    return 'Just now';
-  };
-
-
-
-  const handleLike = async () => {
+  const load = async () => {
+    setLoading(true);
     try {
-      if (isLiked) {
-        await unfavoritePost(id);
-        message.success('Unfavorited');
-      } else {
-        await favoritePost(id);
-        message.success('Favorited');
+      // 1) 帖子详情（访客可读）
+      const postRes = await client.graphql({
+        query: gqlGetPost,
+        variables: { id },
+        authMode: 'apiKey',
+      });
+      const p = postRes?.data?.getPost;
+      console.log('[PostDetail] getPost payload:', p);
+
+      if (!p) {
+        message.warning('Post not found');
+        setPostData(null);
+        setComments([]);
+        return;
       }
-      setIsLiked(!isLiked);
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
-      message.error('Operation failed');
+
+      // 兼容 description | content
+      const desc = p.description ?? p.content ?? '';
+
+      // 🖼️ 统一取图：优先 S3 key → getUrl(accessLevel:'public')；再兜底 url 字段
+      let img = null;
+      const key =
+        p.pet_image_key ??
+        p.petImageKey ??
+        p.imageKey ??
+        null;
+
+      console.log('[PostDetail] key:', key, 'fallback url fields:', p.pet_image || p.petImage || p.image);
+
+      if (key) {
+        try {
+          const { url } = await getUrl({
+            key,
+            options: {
+              accessLevel: 'public',    // 若是 protected/private，请改这里
+              // expiresIn: 7 * 24 * 3600
+            },
+          });
+          img = url?.toString() || null;
+          console.log('[PostDetail] getUrl success:', img);
+        } catch (e) {
+          console.warn('[PostDetail] getUrl failed:', e);
+        }
+      }
+      if (!img) {
+        img = p.pet_image ?? p.petImage ?? p.image ?? null; // 兜底（如果你把临时URL存库了，这里也能用）
+      }
+
+      setPostData({
+        id: p.id,
+        author: p.owner ?? 'Anonymous',
+        timeAgo: formatTimeAgo(p.createdAt),
+        petType: p.pet_type ?? p.petType ?? '',
+        location: p.city ?? '',
+        title: p.title ?? 'Untitled',
+        description: desc,
+        image: img || FALLBACK_IMAGE,
+        tags: Array.isArray(p.keywords) ? p.keywords : [],
+      });
+
+      // 2) 评论（访客可读）
+      const cmtRes = await client.graphql({
+        query: gqlListComments,
+        variables: { filter: { postId: { eq: id } }, limit: 100 },
+        authMode: 'apiKey',
+      });
+      const cmts = (cmtRes?.data?.listComments?.items ?? [])
+        .sort((a, b) => new Date(a?.createdAt || 0) - new Date(b?.createdAt || 0));
+
+      setComments(
+        cmts.map((r) => ({
+          id: r.id,
+          author: r.owner ?? 'Anonymous',
+          timeAgo: formatTimeAgo(r.createdAt),
+          content: r.content ?? '',
+        }))
+      );
+    } catch (err) {
+      console.error('Failed to load post/comments:', err);
+      message.error(err.message || 'Failed to load post');
+      setPostData(null);
+      setComments([]);
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  const handleLike = () => setIsLiked((v) => !v);
 
   const handleReplySubmit = async () => {
-    if (!replyText.trim()) {
-      message.warning('请输入回复内容');
+    const text = replyText.trim();
+    if (!text) {
+      message.warning('Please write something');
       return;
     }
-    
+
     try {
-      // 生成当前时间作为回复时间
-      const now = new Date();
-      const replyTime = now.toTimeString().split(' ')[0]; // 格式: HH:mm:ss
-      
-      console.log('发送回复:', replyText, '时间:', replyTime);
-      
-      const response = await addReply(id, replyText, replyTime);
-      console.log('回复响应:', response);
-      
-      message.success('回复发送成功！');
+      await client.graphql({
+        query: gqlCreateComment,
+        variables: { input: { postId: id, content: text } },
+        authMode: 'userPool',
+      });
+
+      message.success('Comment sent');
       setReplyText('');
-      
-      // 重新加载帖子详情以获取最新的回复列表
-      const updatedResponse = await getPostDetail(id);
-      const data = updatedResponse.data;
-      
-      if (data.replies && Array.isArray(data.replies)) {
-        const formattedComments = data.replies.map((reply, index) => ({
-          id: index,
-          author: reply.reply_username,
-          timeAgo: formatReplyTime(reply.reply_time),
-          content: reply.reply_content
-        }));
-        setComments(formattedComments);
+    } catch (err) {
+      console.error('[createComment error]', JSON.stringify(err, null, 2));
+
+      const errMsg =
+        (err?.errors && err.errors[0]?.message) ||
+        err?.message ||
+        'Failed to send comment';
+
+      if (/not.*authorized|unauthoriz|missing.*auth/i.test(errMsg)) {
+        message.error('Please sign in to reply');
+        navigate('/login', { state: { from: `/detail/${id}` } });
+        return;
       }
-      
-    } catch (error) {
-      console.error('Failed to send reply:', error);
-      message.error(error.message || 'Failed to send reply. Please try again.');
+
+      message.error(errMsg);
+    } finally {
+      // 无论成功或失败，都延迟 1s 刷新页面
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     }
   };
+
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
         <Spin size="large" tip="Loading post details..." />
       </div>
     );
@@ -170,17 +195,17 @@ const PostDetailPage = () => {
 
   return (
     <div className="post-detail-page">
-
-
-      {/* 主要内容区域 */}
-      <div className="detail-content" style={{backgroundColor:'#ffffff'}}>
+      <div className="detail-content" style={{ backgroundColor: '#ffffff' }}>
         {/* Post detail card */}
-        <Card className="post-detail-card">
+        <Card className="post-detail-card" styles={{ body: { paddingTop: 0 } }}>
           {/* Post header */}
           <div className="post-header">
             <Avatar size={32} icon={<UserOutlined />} />
             <div className="post-meta">
-              <strong>{postData.author}</strong> · {postData.timeAgo} · {postData.petType} · {postData.location}
+              <strong>{postData.author}</strong>
+              {postData.timeAgo ? ` · ${postData.timeAgo}` : ''}
+              {postData.petType ? ` · ${postData.petType}` : ''}
+              {postData.location ? ` · ${postData.location}` : ''}
             </div>
           </div>
 
@@ -191,27 +216,27 @@ const PostDetailPage = () => {
           <p className="post-description">{postData.description}</p>
 
           {/* Image */}
-          <div className="post-image-container">
-            <img 
-              src={postData.image} 
-              alt="pet" 
-              className="post-image"
-            />
-          </div>
+          {postData.image ? (
+            <div className="post-image-container">
+              <img src={postData.image} alt="pet" className="post-image" />
+            </div>
+          ) : null}
 
           {/* Tags */}
-          <div className="post-tags">
-            {postData.tags.map((tag, index) => (
-              <Tag key={index} color="blue" className="post-tag">
-                #{tag}
-              </Tag>
-            ))}
-          </div>
+          {postData.tags?.length ? (
+            <div className="post-tags">
+              {postData.tags.map((tag, index) => (
+                <Tag key={index} color="blue" className="post-tag">
+                  #{tag}
+                </Tag>
+              ))}
+            </div>
+          ) : null}
 
-          {/* Like button */}
+          {/* Like button（演示用） */}
           <div className="post-actions">
-            <Button 
-              type="text" 
+            <Button
+              type="text"
               icon={isLiked ? <HeartFilled /> : <HeartOutlined />}
               className={`like-btn ${isLiked ? 'liked' : ''}`}
               onClick={handleLike}
@@ -222,9 +247,9 @@ const PostDetailPage = () => {
         </Card>
 
         {/* Comments */}
-        <Card className="comments-card">
+        <Card className="comments-card" styles={{ body: { paddingTop: 0 } }}>
           <h3 className="comments-title">Replies ({comments.length})</h3>
-          
+
           {comments.length > 0 ? (
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
               {comments.map((comment) => (
@@ -238,7 +263,7 @@ const PostDetailPage = () => {
               ))}
             </Space>
           ) : (
-            <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+            <div style={{ textAlign: 'center', padding: 20, color: '#999' }}>
               No replies yet. Be the first to reply!
             </div>
           )}
@@ -252,12 +277,7 @@ const PostDetailPage = () => {
               rows={3}
               className="reply-input"
             />
-            <Button 
-              type="primary" 
-              icon={<SendOutlined />}
-              onClick={handleReplySubmit}
-              className="reply-btn"
-            >
+            <Button type="primary" icon={<SendOutlined />} onClick={handleReplySubmit} className="reply-btn">
               Send
             </Button>
           </div>
@@ -265,6 +285,4 @@ const PostDetailPage = () => {
       </div>
     </div>
   );
-};
-
-export default PostDetailPage;
+}
