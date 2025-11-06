@@ -23,3 +23,5 @@ amplify init
 amplify push
 
 amplify codegen
+
+npm run dev
