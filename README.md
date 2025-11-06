@@ -13,8 +13,13 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 ##启动项目
+
 npm run dev
+
 如果不行就：
+
 amplify init
+
 amplify push
+
 amplify codegen
