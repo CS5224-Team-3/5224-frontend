@@ -1,283 +1,184 @@
-import React, { useEffect, useState } from 'react'
-import { Form, DatePicker, Input, Button, Row, Col, App, Spin, Upload, message as antdMessage } from 'antd'
-import { useParams, useNavigate } from 'react-router-dom'
-import { createPost, getPostDetail, updatePost, uploadImage } from './services/api'
-import { UploadOutlined, InboxOutlined } from '@ant-design/icons'
-import dayjs from 'dayjs'
+// src/PostCreate.jsx  （或 src/pages/PostCreate.jsx）
+import React, { useState } from 'react';
+import { Form, Input, Button, Upload, DatePicker, Select, App } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
 
+// ✅ 你的 API：上传 + 创建
+import { uploadImage, createPost } from './services/api'; // 若在 pages/ 下，请改为 ../services/api
+// ✅ 会话校验，避免 create 后被重定向到 /login
+import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+
+const { TextArea } = Input;
 const { RangePicker } = DatePicker;
-const { useApp } = App;
+const { Option } = Select;
 
-export default function PostForm() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { message } = useApp();
-  const [form] = Form.useForm();
+export default function PostCreate() {
   const [loading, setLoading] = useState(false);
-  const isEditMode = !!id;
-  
-  const validateMessages = {
-    required: '${label} is required!',
-    types: {
-      pet_type: '${label} is not a valid pet type!',
-      city: '${label} is not a valid city!',
-    },
-    number: {
-      range: '${label} must be between ${min} and ${max}',
-    },
+  const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const { message } = App.useApp?.() || { message: { success: console.log, error: console.error, warning: console.warn, loading: console.log } };
+
+  // 表单提交失败：给出可见错误
+  const onFinishFailed = ({ errorFields }) => {
+    console.log('[PostCreate] onFinishFailed', errorFields);
+    const first = errorFields?.[0]?.errors?.[0] || 'Please complete required fields';
+    message.error(first);
   };
 
-  // 如果是编辑模式，加载现有数据
-  useEffect(() => {
-    const loadPostData = async () => {
-      if (isEditMode) {
-        setLoading(true);
-        try {
-          const response = await getPostDetail(id);
-          const postData = response.data;
-          
-          // 将后端数据映射到表单字段
-          form.setFieldsValue({
-            user: {
-              name: postData.title,
-              email: postData.petType,
-              age: postData.city,
-              period: postData.startDate && postData.endDate ? [
-                dayjs(postData.startDate),
-                dayjs(postData.endDate)
-              ] : null,
-              introduction: postData.description
-            }
-          });
-        } catch (error) {
-          console.error('Failed to load post:', error);
-          message.error('Failed to load post data');
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    
-    loadPostData();
-  }, [isEditMode, id, form, message]);
-  
+  // 提交成功：上传图片 → 写库 → 跳详情
   const onFinish = async (values) => {
+    console.log('[PostCreate] onFinish values =', values);
     setLoading(true);
-    
     try {
+      // 1) 会话校验：确认已登录且 token 可用（与 createPost 的 userPool 一致）
+      try {
+        const u = await getCurrentUser();
+        const s = await fetchAuthSession();
+        console.log('[auth] user =', u?.username, 'idToken?', !!s?.tokens?.idToken);
+      } catch {
+        message.error('Session expired. Please sign in again.');
+        navigate('/login');
+        return;
+      }
+
+      // 2) 取 Upload 的文件
+      const fileObj = values?.pet_image?.[0]?.originFileObj;
       let imageUrl = null;
-      
-      // 如果有上传的图片，先上传图片
-      if (values.user.pet_image && values.user.pet_image.length > 0) {
-        const file = values.user.pet_image[0].originFileObj;
-        if (file) {
-          console.log('Uploading image before creating post...');
-          const uploadResponse = await uploadImage(file);
-          imageUrl = uploadResponse.data?.url || uploadResponse.data?.imageUrl || uploadResponse.url || uploadResponse.imageUrl;
-          console.log('Image uploaded successfully:', imageUrl);
+      let imageKey = null;
+
+      if (fileObj) {
+        message.loading({ content: 'Uploading image...', key: 'up', duration: 0 });
+        try {
+          const up = await Promise.race([
+            uploadImage(fileObj), // 返回 { data: { key, url }, key, url }
+            new Promise((_, rej) => setTimeout(() => rej(new Error('Upload timeout (15s)')), 15000)),
+          ]);
+          console.log('[uploadImage] result:', up);
+          imageUrl = up?.data?.url || up?.url || null; // 给前端展示的临时 URL（可选）
+          imageKey = up?.data?.key || up?.key || null; // S3 key（详情页 getUrl 用它）
+          message.success({ content: 'Image uploaded', key: 'up', duration: 1.2 });
+        } catch (e) {
+          console.warn('[uploadImage] failed, continue without image', e);
+          message.warning({ content: `Upload failed: ${e.message}. Will continue without image.`, key: 'up' });
         }
       }
-      
-      // 将表单数据映射为 API 需要的格式
-      const postData = {
-        pet_type: values.user.email,
-        city: values.user.age,
-        startDate: values.user.period?.[0]?.format('YYYY-MM-DD'),
-        endDate: values.user.period?.[1]?.format('YYYY-MM-DD'),
-        title: values.user.name,
-        keywords: values.user.keywords ? values.user.keywords.split(';').map(k => k.trim()).filter(k => k) : [],
-        description: values.user.introduction,
-        pet_image: imageUrl,
-        createAt: new Date().toISOString()
-      };
-      
-      if (isEditMode) {
-        // 更新帖子
-        const modified = [
-          { title: postData.title },
-          { description: postData.description }
-        ];
-        await updatePost(id, modified);
-        message.success('Post updated successfully!');
-      } else {
-        // 创建新帖子
-        await createPost(postData);
-        message.success('Post created successfully!');
+
+      // 3) 处理日期
+      let startDate = null, endDate = null;
+      if (Array.isArray(values?.dateRange) && values.dateRange.length === 2) {
+        startDate = values.dateRange[0]?.format('YYYY-MM-DD');
+        endDate = values.dateRange[1]?.format('YYYY-MM-DD');
       }
-      
-      navigate('/profile');
-    } catch (error) {
-      console.error('Failed to save post:', error);
-      message.error(error.message || 'Failed to save post. Please try again.');
+
+      // 4) 组装与 schema 对齐的数据（content 是必填）
+      const postData = {
+        title: values.title,
+        description: values.description || '',
+        pet_type: values.pet_type || null,
+        city: values.city || null,
+        startDate,
+        endDate,
+        keywords: values.keywords ? values.keywords.split(',').map(k => k.trim()).filter(Boolean) : [],
+        pet_image: imageUrl,         // 可选展示 URL
+        pet_image_key: imageKey,     // 详情页从 S3 取图用的 key（关键）
+        content: `[${values.pet_type || ''}/${values.city || ''}] ${values.description || ''}`,
+        createdAt: new Date().toISOString(), // 注意拼写：createdAt
+      };
+      console.log('[PostCreate] createPost payload:', postData);
+
+      // 5) 创建
+      const res = await createPost(postData);
+      console.log('[PostCreate] createPost result:', res);
+
+      // 6) 跳转到详情：/detail/:id （匹配你的路由）
+      const newId = res?.data?.id;
+      message.success('Post created successfully!');
+      navigate(`/detail/${newId}`);
+    } catch (err) {
+      console.error('[PostCreate] createPost error', err);
+      message.error(err?.message || 'Failed to create post');
     } finally {
       setLoading(false);
     }
   };
-      
-      // 统一的输入框样式
-      const inputStyle = {
-        fontSize: '18px',
-        padding: '8px 12px'
-      };
-      
-      // 统一的标签样式
-      const formItemStyle = {
-        fontSize: '18px'
-      };
-      
+
   return (
-    <div className="post-form-container" style={{
-      maxWidth: '900px',
-      margin: '0 auto',
-      padding: '50px 16px 0px 16px',
-      width: '100%'
-    }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '30px', fontSize: '24px' }}>
-        {isEditMode ? 'Edit Post' : 'Create New Post'}
-      </h2>
-      <Spin spinning={loading} tip={isEditMode ? "Loading post..." : "Saving..."}>
-      <Form 
+    <div style={{ padding: '60px', maxWidth: '900px', margin: '0 auto' }}>
+      <h1 style={{ fontSize: '32px', marginBottom: '30px', textAlign: 'center' }}>Create a New Post</h1>
+
+      <Form
         form={form}
-        name="post-form"
-        onFinish={onFinish}
-        validateMessages={validateMessages}
-        style={{ width: '100%', fontSize: '18px' }}
         layout="vertical"
+        onFinish={onFinish}
+        onFinishFailed={onFinishFailed}
+        autoComplete="off"
+        size="large"
       >
-          {/* Post title 和 Pet type 在同一行 */}
-          <Row gutter={24}>
-            <Col xs={24} md={12}>
-              <Form.Item 
-                name={['user', 'name']} 
-                label={<span style={formItemStyle}>Post title</span>} 
-                rules={[{ required: true }]}
-              >
-                <Input style={inputStyle} placeholder="Enter post title, please start with [help] or [story]" />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} md={12}>
-              <Form.Item 
-                name={['user', 'email']} 
-                label={<span style={formItemStyle}>Pet type</span>} 
-                rules={[{ required: true, type: 'pet_type' }]}
-              >
-                <Input style={inputStyle} placeholder="Enter pet type" />
-              </Form.Item>
-            </Col>
-          </Row>
-          
-          <Row gutter={24}>
-            <Col xs={24} md={12}>
-              <Form.Item 
-                name={['user', 'age']} 
-                label={<span style={formItemStyle}>City</span>} 
-                rules={[{ required: true, type: 'city' }]}
-              >
-                <Input style={inputStyle} placeholder="Enter city" />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} md={12}>
-              <Form.Item 
-                name={['user', 'period']} 
-                label={<span style={formItemStyle}>Boarding period</span>} 
-                rules={[{ required: true }]}
-              >
-                <RangePicker style={{...inputStyle, width: '100%'}} />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={24}>
-            <Col xs={24} md={12}>
-            <Form.Item
-          name={['user', 'keywords']}
-          label={<span style={formItemStyle}>Keywords</span>}
+        <Form.Item
+          label="Title"
+          name="title"
+          rules={[{ required: true, message: 'Please input post title!' }]}
+        >
+          <Input placeholder="Enter post title" />
+        </Form.Item>
+
+        <Form.Item
+          label="Description"
+          name="description"
+          rules={[{ required: true, message: 'Please input description!' }]}
+        >
+          <TextArea rows={4} placeholder="Describe your pet or event..." />
+        </Form.Item>
+
+        <Form.Item label="Pet Type" name="pet_type">
+          <Input placeholder="e.g. dog, cat, corgi, mixed... (free text)" allowClear />
+        </Form.Item>
+
+        <Form.Item label="City" name="city">
+          <Input placeholder="Enter city" />
+        </Form.Item>
+
+        <Form.Item label="Date Range" name="dateRange">
+          <RangePicker style={{ width: '100%' }} />
+        </Form.Item>
+
+        <Form.Item label="Keywords (comma separated)" name="keywords">
+          <Input placeholder="e.g. cute, adoption, friendly" />
+        </Form.Item>
+
+        {/* ✅ Upload 正确绑定到 Form：valuePropName + getValueFromEvent */}
+        <Form.Item
+          label="Pet Image"
+          name="pet_image"
+          valuePropName="fileList"
+          getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList ?? [])}
+        >
+          <Upload
+            listType="picture-card"
+            beforeUpload={() => false}   // 不自动上传；提交时手动上传到 S3
+            maxCount={1}
           >
-            <Input style={inputStyle} placeholder="Enter keyword, e.g. Dog; Hangzhou; urgent" />
-          </Form.Item>
-          <Form.Item 
-            name={['user', 'pet_image']}
-            label={<span style={formItemStyle}>Pet Image</span>}
+            <div>
+              <PlusOutlined />
+              <div style={{ marginTop: 8 }}>Upload</div>
+            </div>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item style={{ textAlign: 'center', marginTop: '30px' }}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            size="large"
+            style={{ fontSize: '18px', height: '50px', padding: '0 40px' }}
           >
-            <Upload
-              name="file"
-              listType="picture-card"
-              className="avatar-uploader"
-              showUploadList={true}
-              beforeUpload={(file) => {
-                const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-                if (!isJpgOrPng) {
-                  antdMessage.error('You can only upload JPG/PNG file!');
-                }
-                const isLt2M = file.size / 1024 / 1024 < 2;
-                if (!isLt2M) {
-                  antdMessage.error('Image must smaller than 2MB!');
-                }
-                return isJpgOrPng && isLt2M;
-              }}
-              onChange={(info) => {
-                if (info.file.status === 'done') {
-                  antdMessage.success(`${info.file.name} file uploaded successfully`);
-                } else if (info.file.status === 'error') {
-                  antdMessage.error(`${info.file.name} file upload failed.`);
-                }
-              }}
-              customRequest={({ file, onSuccess }) => {
-                // 不立即上传，只是保存文件信息
-                console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
-                
-                // 创建一个包含文件信息的响应对象
-                const uploadResponse = {
-                  name: file.name,
-                  status: 'done',
-                  originFileObj: file // 保存原始文件对象，用于后续上传
-                };
-                onSuccess(uploadResponse, file);
-              }}
-            >
-              <div>
-                <UploadOutlined />
-                <div style={{ marginTop: 8 }}>Upload</div>
-              </div>
-            </Upload>
-          </Form.Item>
-            </Col>
-          </Row>
-        
-          {/* Description 占据整行宽度 */}
-          <Form.Item 
-            name={['user', 'introduction']} 
-            label={<span style={formItemStyle}>Description</span>}
-          >
-            <Input.TextArea 
-              style={{...inputStyle, fontSize: '18px'}} 
-              rows={8} 
-              placeholder="Enter description"
-            />
-          </Form.Item>
-          
-          <Form.Item 
-            style={{display:'flex',justifyContent:'center',marginTop:'30px', gap: '16px'}} 
-          >
-            <Button 
-              size="large"
-              style={{ fontSize: '18px', height: '50px', padding: '0 40px' }}
-              onClick={() => navigate(-1)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="primary" 
-              htmlType="submit"
-              size="large"
-              style={{ fontSize: '18px', height: '50px', padding: '0 40px' }}
-            >
-              {isEditMode ? 'Update Post' : 'Create Post'}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Spin>
+            Create Post
+          </Button>
+        </Form.Item>
+      </Form>
     </div>
-  )
+  );
 }

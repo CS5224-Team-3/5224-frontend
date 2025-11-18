@@ -1,0 +1,16 @@
+{
+  "resourceName": "mypet",
+  "policyUUID": "bd8bc9e0",
+  "bucketName": "newmypet",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

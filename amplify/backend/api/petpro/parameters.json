@@ -1,0 +1,12 @@
+{
+  "AppSyncApiName": "petpro",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authpetpro5d747c07",
+      "Outputs.UserPoolId"
+    ]
+  },
+  "AuthModeLastUpdated": "2025-10-20T13:37:26.594Z"
+}
