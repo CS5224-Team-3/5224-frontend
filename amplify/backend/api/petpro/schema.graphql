@@ -44,6 +44,5 @@ type Comment
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 
-  # ⚠️ 这里一定不要加 "!"，保持可空，避免 createComment 时 resolver 立刻去解析嵌套 post 失败
   post: Post @belongsTo(fields: ["postId"])
 }
